@@ -1,0 +1,15 @@
+image: docker:latest
+services:
+  - docker:dind
+stages:
+  - test
+test:
+  script:
+    - docker build -t rabata.io .
+    - docker run -p 5050:5050 -v $(pwd)/allure_results:/app/allure_results my-playwright-project
+
+  artifacts:
+    paths:
+      - /tmp/my_allure_results/*
+  only:
+    - master
