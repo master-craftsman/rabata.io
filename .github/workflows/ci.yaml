@@ -37,7 +37,11 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: python3 -m pip install -r requirements.txt
-      - run: |
+      - name: Install Allure
+        run: python3 -m pip install allure-pytest
+      - name: Run tests
+        id: run_tests
+        run: |
           if [ "${{github.event_name}}" = "schedule" ]; then
             export args="-m smoke"
             export ENV="prod"
@@ -45,8 +49,8 @@ jobs:
             export ENV='${{github.event.inputs.environment}}'
             export args='${{github.event.inputs.arguments}}'
           fi
-            echo "::set-output name=env_name::${ENV:-prod}"
-            pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
+          echo "::set-output name=env_name::${ENV:-prod}"
+          pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
       - name: Generate Allure report
         if: always()
         run: allure generate allure-results --clean -o allure-report
