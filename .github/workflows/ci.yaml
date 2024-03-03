@@ -1,34 +1,56 @@
-name: CI
-on: [push, pull_request]
-jobs:
- setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-          playwright install 
+name: TestRegression
 
- test:
-    needs: setup
+on:
+ workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        default: "prod"
+        description: "Set environment, e.g. `ENV=prod or ENV=shot`"
+      arguments:
+        required: false
+        default: "-m regression"
+        description: "pytest additional arguments, e.g. `-m regression`"
+
+jobs:
+ playwright:
+    name: Regression tests
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright/python:v1.41.0-jammy
+    env:
+      AUTH_LOGIN: ${{ secrets.AUTH_LOGIN }}
+      AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+      NewUserName: ${{ secrets.NEWUSERNAME }}
+      NewEmail: ${{ secrets.NEWEMAIL }}
+      NewPass: ${{ secrets.NEWPASS }}
+    strategy:
+      matrix:
+        browser: [remote_chrome]
+    outputs:
+      env_name: ${{ steps.pytest.outputs.env_name }}
     steps:
-      - name: Run tests
-        run: |
-          source venv/bin/activate
-          PLAYWRIGHT_HEADLESS=1 pytest tests/*.py --alluredir=allure-results
-      - name: Upload Allure report
-        uses: actions/upload-artifact@v2
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          name: allure-report
-          path: allure-results/*
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python3 -m pip install -r requirements.txt
+      - run: |
+          if [ "${{github.event_name}}" = "schedule" ]; then
+            export args="-m regression"
+            export ENV="prod"
+          else
+            export ENV='${{github.event.inputs.environment}}'
+            export args='${{github.event.inputs.arguments}}'
+          fi
+          echo "::set-output name=env_name::${ENV:-prod}"
+          pytest ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
