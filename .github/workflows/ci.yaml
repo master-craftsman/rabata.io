@@ -19,6 +19,7 @@ jobs:
       - name: Run tests
         run: |
           source venv/bin/activate
+          PLAYWRIGHT_HEADLESS=1
           pytest tests/*.py --alluredir=allure-results 
       - name: Upload Allure report
         uses: actions/upload-artifact@v2
