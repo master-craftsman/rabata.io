@@ -38,7 +38,11 @@ jobs:
       - name: Install dependencies
         run: python3 -m pip install -r requirements.txt
       - name: Install Allure
-        run: python3 -m pip install allure-pytest
+        run: |
+          python3 -m pip install allure-pytest
+          curl -o allure https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.zip
+          unzip allure-commandline-2.13.8.zip
+          sudo mv allure-2.13.8/bin/allure /usr/local/bin/
       - name: Run tests
         id: run_tests
         run: |
