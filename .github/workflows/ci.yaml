@@ -39,14 +39,14 @@ jobs:
         run: python3 -m pip install -r requirements.txt
       - run: |
           if [ "${{github.event_name}}" = "schedule" ]; then
-            export args="-m regression"
+            export args="-m smoke"
             export ENV="prod"
           else
             export ENV='${{github.event.inputs.environment}}'
             export args='${{github.event.inputs.arguments}}'
           fi
             echo "::set-output name=env_name::${ENV:-prod}"
-            pytest ${args} --bn ${{ matrix.browser }}
+            pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
       - name: Generate Allure report
         run: allure generate allure-results --clean -o allure-report
       - name: Deploy to GitHub Pages
