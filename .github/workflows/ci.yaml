@@ -46,7 +46,7 @@ jobs:
             export args='${{github.event.inputs.arguments}}'
           fi
           echo "::set-output name=env_name::${ENV:-prod}"
-          pytest ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
+          pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
       - name: Generate Allure report
         run: allure generate allure-results --clean -o allure-report
       - name: Deploy to GitHub Pages
