@@ -37,18 +37,20 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: python3 -m pip install -r requirements.txt
-      - run: |
-          if [ "${{github.event_name}}" = "schedule" ]; then
-            export args="-m smoke"
-            export ENV="prod"
-          else
-            export ENV='${{github.event.inputs.environment}}'
-            export args='${{github.event.inputs.arguments}}'
-          fi
+      - name: Run tests and generate Allure report
+        run: |
+          try:
+            if [ "${{github.event_name}}" = "schedule" ]; then
+              export args="-m smoke"
+              export ENV="prod"
+            else
+              export ENV='${{github.event.inputs.environment}}'
+              export args='${{github.event.inputs.arguments}}'
+            fi
             echo "::set-output name=env_name::${ENV:-prod}"
             pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=allure-results
-      - name: Generate Allure report
-        run: allure generate allure-results --clean -o allure-report
+          finally:
+            allure generate allure-results --clean -o allure-report
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
