@@ -48,9 +48,9 @@ jobs:
             export args='${{github.event.inputs.arguments}}'
           fi
           echo "::set-output name=env_name::${ENV:-prod}"
-          pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=/tmp/my_allure_results
+          pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=./allure-results
       - name: Upload Allure report
         uses: actions/upload-artifact@v2
         with:
           name: allure-report
-          path: /tmp/my_allure_results/*
+          path: ./allure-results/*
