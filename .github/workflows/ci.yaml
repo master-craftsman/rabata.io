@@ -18,9 +18,9 @@ jobs:
       - name: Run tests
         run: |
           source venv/bin/activate
-          pytest --alluredir=/tmp/my_allure_results
+          pytest tests/*.py --alluredir=allure-results 
       - name: Upload Allure report
         uses: actions/upload-artifact@v2
         with:
           name: allure-report
-          path: /tmp/my_allure_results/*
+          path: allure-results/*
