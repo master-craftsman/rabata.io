@@ -49,9 +49,15 @@ jobs:
           fi
           echo "::set-output name=env_name::${ENV:-prod}"
           pytest tests/*.py ${args} --bn ${{ matrix.browser }} --alluredir=./allure-results
-      - name: Upload Allure report
-        if: always()
-        uses: actions/upload-artifact@v2
+      - name: Deploy report to gh-pages
+        uses: actions/checkout@v3
         with:
-          name: allure-report
-          path: ./allure-results/*
+          ref: gh-pages  # Checkout gh-pages branch
+        if: always()  # This step runs even if previous steps fail
+      - run: |
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git add allure-report/*  # Add all report files to staging
+            git commit -m "Add Allure report for ${{ github.sha }}"  # Commit with SHA
+            git push origin gh-pages  # Push to gh-pages branch
+
