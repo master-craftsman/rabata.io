@@ -42,9 +42,10 @@ jobs:
           python3 -m pip install allure-pytest
           apt-get update
           apt-get install -y unzip
-          curl -o allure https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.zip
+          curl -L -o allure-commandline-2.13.8.zip https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.zip
           unzip allure-commandline-2.13.8.zip
           mv allure-2.13.8/bin/allure /usr/local/bin/
+
       - name: Run tests
         id: run_tests
         run: |
